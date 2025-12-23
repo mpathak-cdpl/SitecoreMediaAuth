@@ -64,7 +64,7 @@
     <Compile Include="Logging\MediaSecurityLogger.cs" />
     <Compile Include="Models\AuthorizationResult.cs" />
     <Compile Include="Models\RuleNameType.cs" />
-    <Compile Include="Pipelines\HttpRequestBegin\SecureMediaRequestProcessor.cs" />
+    <Compile Include="Pipelines\GetMediaStream\SecureMediaStreamProcessor.cs" />
     <Compile Include="Security\Interfaces\IMediaAuthorizationService.cs" />
     <Compile Include="Security\Services\MediaAuthorizationService.cs" />
   </ItemGroup>

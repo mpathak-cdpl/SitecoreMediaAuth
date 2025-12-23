@@ -6,14 +6,14 @@ using IPCoop.Foundation.MediaSecurity.Security.Interfaces;
 using Sitecore.Configuration;
 using Sitecore.Data.Items;
 using Sitecore.Diagnostics;
-using Sitecore.Pipelines.HttpRequest;
+using Sitecore.Resources.Media;
 using Sitecore.SecurityModel;
 
-namespace IPCoop.Foundation.MediaSecurity.Pipelines.HttpRequestBegin
+namespace IPCoop.Foundation.MediaSecurity.Pipelines.GetMediaStream
 {
     /// <summary>
-    /// Pipeline processor that intercepts media requests and enforces authorization.
-    /// Executes early in the httpRequestBegin pipeline, before media caching occurs.
+    /// Pipeline processor for getMediaStream pipeline that enforces authorization on media requests.
+    /// This is the CORRECT pipeline for media authorization in Sitecore.
     /// 
     /// Key Features:
     /// - Detects secured media folders by checking for RuleName field
@@ -23,19 +23,18 @@ namespace IPCoop.Foundation.MediaSecurity.Pipelines.HttpRequestBegin
     /// - Allows normal processing for non-secured media
     /// - Comprehensive logging for troubleshooting
     /// </summary>
-    public class SecureMediaRequestProcessor : HttpRequestProcessor
+    public class SecureMediaStreamProcessor
     {
         private readonly IMediaAuthorizationService _authorizationService;
         private readonly bool _isEnabled;
 
         // Template ID for the Secure Media Folder template (update after template creation)
-        // This should match the ID of your Secure Media Folder template
         private const string SecureMediaFolderTemplateId = "{B6A6710E-1C3E-4F3A-9C8D-2E4F5A6B7C8D}";
         
         // Field name in the Secure Media Folder template
         private const string RuleNameFieldName = "RuleName";
 
-        public SecureMediaRequestProcessor(IMediaAuthorizationService authorizationService)
+        public SecureMediaStreamProcessor(IMediaAuthorizationService authorizationService)
         {
             Assert.ArgumentNotNull(authorizationService, nameof(authorizationService));
             _authorizationService = authorizationService;
@@ -43,36 +42,32 @@ namespace IPCoop.Foundation.MediaSecurity.Pipelines.HttpRequestBegin
         }
 
         /// <summary>
-        /// Main process method called by Sitecore pipeline
+        /// Main process method called by Sitecore getMediaStream pipeline
         /// </summary>
-        public override void Process(HttpRequestArgs args)
+        public void Process(GetMediaStreamPipelineArgs args)
         {
             Assert.ArgumentNotNull(args, nameof(args));
+
+            // DIAGNOSTIC: Force log to verify processor is running
+            Sitecore.Diagnostics.Log.Info($"[MediaSecurity] MEDIA STREAM PROCESSOR FIRED for item: {args.MediaData?.MediaItem?.Paths?.Path ?? "null"}", this);
 
             try
             {
                 // Check if feature is enabled
                 if (!_isEnabled)
                 {
-                    MediaSecurityLogger.LogFeatureDisabled(args.Url.FilePath);
+                    MediaSecurityLogger.LogFeatureDisabled(args.MediaData?.MediaItem?.Paths?.Path ?? "unknown");
                     return;
                 }
 
-                // Check if this is a media request
-                if (!IsMediaRequest(args))
-                {
-                    return;
-                }
-
-                var mediaPath = args.Url.FilePath;
-
-                // Get the media item
-                var mediaItem = GetMediaItem(args);
+                // Get media item
+                var mediaItem = args.MediaData?.MediaItem;
                 if (mediaItem == null)
                 {
-                    // Media item not found - let normal processing handle 404
                     return;
                 }
+
+                var mediaPath = mediaItem.Paths.Path;
 
                 // Find the first secure folder in the item's ancestry
                 var secureFolder = FindSecureMediaFolder(mediaItem);
@@ -95,8 +90,12 @@ namespace IPCoop.Foundation.MediaSecurity.Pipelines.HttpRequestBegin
                 // Secure folder with RuleName detected
                 MediaSecurityLogger.LogSecureFolderDetected(mediaPath, secureFolder.Paths.FullPath, ruleName);
 
-                // Bypass cache for secured media
-                BypassMediaCache(args);
+                // CRITICAL: Disable Sitecore media caching for this item
+                // This ensures authorization runs on every request
+                args.Options.DisableMediaCache = true;
+
+                // Bypass browser cache for secured media
+                BypassMediaCache();
                 MediaSecurityLogger.LogCacheBypass(mediaPath);
 
                 // Authorize the request
@@ -109,60 +108,19 @@ namespace IPCoop.Foundation.MediaSecurity.Pipelines.HttpRequestBegin
                 // Handle authorization result
                 if (!authResult.IsAuthorized)
                 {
-                    HandleUnauthorizedAccess(args, authResult);
+                    HandleUnauthorizedAccess(authResult);
+                    args.AbortPipeline();
                 }
                 // If authorized, continue normal processing
             }
             catch (Exception ex)
             {
-                MediaSecurityLogger.LogError("SecureMediaRequestProcessor.Process", ex, args.Url.FilePath);
+                MediaSecurityLogger.LogError("SecureMediaStreamProcessor.Process", ex, 
+                    args.MediaData?.MediaItem?.Paths?.Path ?? "unknown");
                 
                 // Fail closed - deny access on error
-                args.Context.Response.StatusCode = 500;
-                args.Context.Response.StatusDescription = "Internal Server Error";
-                args.Context.Response.Write("An error occurred while processing your request.");
+                HandleError();
                 args.AbortPipeline();
-            }
-        }
-
-        /// <summary>
-        /// Checks if the current request is for media
-        /// </summary>
-        private bool IsMediaRequest(HttpRequestArgs args)
-        {
-            var filePath = args.Url.FilePath;
-            
-            // Check for standard Sitecore media paths
-            return filePath.StartsWith("/~/media/", StringComparison.OrdinalIgnoreCase) ||
-                   filePath.StartsWith("/-/media/", StringComparison.OrdinalIgnoreCase) ||
-                   filePath.StartsWith("~/media/", StringComparison.OrdinalIgnoreCase) ||
-                   filePath.StartsWith("-/media/", StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Gets the Sitecore media item from the request
-        /// </summary>
-        private Item GetMediaItem(HttpRequestArgs args)
-        {
-            try
-            {
-                // Use Sitecore's media manager to resolve the media item
-                var mediaRequest = Sitecore.Resources.Media.MediaManager.GetMediaRequest(args.Url);
-                if (mediaRequest == null)
-                {
-                    return null;
-                }
-
-                using (new SecurityDisabler())
-                {
-                    var mediaItem = Sitecore.Resources.Media.MediaManager.GetMedia(mediaRequest)?.MediaData?.MediaItem;
-                    return mediaItem;
-                }
-            }
-            catch (Exception ex)
-            {
-                MediaSecurityLogger.LogError("GetMediaItem", ex, args.Url.FilePath);
-                return null;
             }
         }
 
@@ -242,11 +200,16 @@ namespace IPCoop.Foundation.MediaSecurity.Pipelines.HttpRequestBegin
         }
 
         /// <summary>
-        /// Bypasses Sitecore media cache for secured media items
+        /// Bypasses media cache for secured media items
         /// </summary>
-        private void BypassMediaCache(HttpRequestArgs args)
+        private void BypassMediaCache()
         {
-            var response = args.Context.Response;
+            if (HttpContext.Current?.Response == null)
+            {
+                return;
+            }
+
+            var response = HttpContext.Current.Response;
             
             // Set cache control headers to prevent caching
             response.Cache.SetCacheability(HttpCacheability.NoCache);
@@ -263,9 +226,14 @@ namespace IPCoop.Foundation.MediaSecurity.Pipelines.HttpRequestBegin
         /// <summary>
         /// Handles unauthorized access by returning appropriate HTTP status code
         /// </summary>
-        private void HandleUnauthorizedAccess(HttpRequestArgs args, AuthorizationResult authResult)
+        private void HandleUnauthorizedAccess(AuthorizationResult authResult)
         {
-            var response = args.Context.Response;
+            if (HttpContext.Current?.Response == null)
+            {
+                return;
+            }
+
+            var response = HttpContext.Current.Response;
             
             if (!authResult.IsAuthenticated)
             {
@@ -283,7 +251,24 @@ namespace IPCoop.Foundation.MediaSecurity.Pipelines.HttpRequestBegin
                 response.Write("<html><body><h1>403 - Forbidden</h1><p>You do not have permission to access this resource.</p></body></html>");
             }
 
-            args.AbortPipeline();
+            response.End();
+        }
+
+        /// <summary>
+        /// Handles errors by returning 500 status code
+        /// </summary>
+        private void HandleError()
+        {
+            if (HttpContext.Current?.Response == null)
+            {
+                return;
+            }
+
+            var response = HttpContext.Current.Response;
+            response.StatusCode = 500;
+            response.StatusDescription = "Internal Server Error";
+            response.Write("<html><body><h1>500 - Internal Server Error</h1><p>An error occurred while processing your request.</p></body></html>");
+            response.End();
         }
     }
 }
