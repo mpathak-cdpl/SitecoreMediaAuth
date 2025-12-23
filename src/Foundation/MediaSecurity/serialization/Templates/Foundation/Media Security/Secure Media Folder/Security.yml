@@ -1,0 +1,13 @@
+---
+ID: "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
+Parent: "b6a6710e-1c3e-4f3a-9c8d-2e4f5a6b7c8d"
+Template: "{e269fbb5-3750-427a-9149-7aa950b49301}"
+Path: /sitecore/templates/Foundation/Media Security/Secure Media Folder/Security
+Languages:
+- Language: en
+  Versions:
+  - Version: 1
+    Fields:
+    - ID: "{b5b27af1-25ef-405c-87ce-369b3a004016}"
+      Hint: __Display name
+      Value: Security

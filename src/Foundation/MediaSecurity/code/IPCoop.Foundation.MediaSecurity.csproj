@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>IPCoop.Foundation.MediaSecurity</RootNamespace>
+    <AssemblyName>IPCoop.Foundation.MediaSecurity</AssemblyName>
+    <Description>IPCoop Sitecore Media Request Handler with Claims-Based Authorization</Description>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Sitecore Dependencies - Update versions to match your Sitecore instance -->
+    <Reference Include="Sitecore.Kernel">
+      <HintPath>..\..\..\..\lib\Sitecore.Kernel.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Sitecore.Logging">
+      <HintPath>..\..\..\..\lib\Sitecore.Logging.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    
+    <!-- .NET Framework References -->
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Security" />
+    
+    <!-- Microsoft DI for Sitecore 9.3+ -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="App_Config\Include\Foundation\" />
+  </ItemGroup>
+
+</Project>

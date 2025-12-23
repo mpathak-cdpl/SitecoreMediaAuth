@@ -1,0 +1,17 @@
+---
+ID: "d3f5c3a1-2b4e-4f9a-8c7d-1a2b3c4d5e6f"
+Parent: "b6a6710e-1c3e-4f3a-9c8d-2e4f5a6b7c8d"
+Template: "b6a6710e-1c3e-4f3a-9c8d-2e4f5a6b7c8d"
+Path: /sitecore/templates/Foundation/Media Security/Secure Media Folder/__Standard Values
+Languages:
+- Language: en
+  Fields:
+  - ID: "{25bed78c-4957-4165-998a-ca1b52f67497}"
+    Hint: __Created
+    Value: 20251223T120000Z
+  Versions:
+  - Version: 1
+    Fields:
+    - ID: "{f1e2d3c4-b5a6-7c8d-9e0f-1a2b3c4d5e6f}"
+      Hint: RuleName
+      Value: ""

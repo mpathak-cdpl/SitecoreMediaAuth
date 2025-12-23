@@ -1,0 +1,36 @@
+---
+ID: "b6a6710e-1c3e-4f3a-9c8d-2e4f5a6b7c8d"
+Parent: "{fe5dd826-48c6-436d-b87a-7c4ba3c4dbdc}"
+Template: "{ab86861a-6030-46c5-b394-e8f99e8b87db}"
+Path: /sitecore/templates/Foundation/Media Security/Secure Media Folder
+SharedFields:
+- ID: "{12c33f3f-86c5-43a5-aeb4-5598cec45116}"
+  Hint: __Base template
+  Value: "{fe5dd826-48c6-436d-b87a-7c4ba3c4dbdc}"
+- ID: "{f7d48a55-2158-4f02-9356-756654404f73}"
+  Hint: __Standard values
+  Value: "{d3f5c3a1-2b4e-4f9a-8c7d-1a2b3c4d5e6f}"
+Languages:
+- Language: en
+  Fields:
+  - ID: "{25bed78c-4957-4165-998a-ca1b52f67497}"
+    Hint: __Created
+    Value: 20251223T120000Z
+  - ID: "{5dd74568-4d4b-44c1-b513-0af5f4cda34f}"
+    Hint: __Created by
+    Value: |
+      sitecore\admin
+  Versions:
+  - Version: 1
+    Fields:
+    - ID: "{b5b27af1-25ef-405c-87ce-369b3a004016}"
+      Hint: __Display name
+      Value: Secure Media Folder
+    - ID: "{577f1689-7de4-4ad2-a15f-7fdc1759285f}"
+      Hint: __Long description
+      Value: |
+        Template for media library folders that require claims-based authorization.
+        Use this template for folders containing media that should only be accessible to users with specific state claims.
+    - ID: "{9541e67d-ce8c-4225-803d-33f7f29f09ef}"
+      Hint: __Short description
+      Value: Media folder template with claims-based authorization support

@@ -1,0 +1,52 @@
+---
+ID: "f1e2d3c4-b5a6-7c8d-9e0f-1a2b3c4d5e6f"
+Parent: "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d"
+Template: "{455a3e98-a627-4b40-8035-e683a0331ac7}"
+Path: /sitecore/templates/Foundation/Media Security/Secure Media Folder/Security/RuleName
+SharedFields:
+- ID: "{ab162cc0-dc80-4abf-8871-998ee5d7ba32}"
+  Hint: Type
+  Value: Droplink
+- ID: "{ba3f86a2-4a1c-4d78-b63d-91c2779c1b5e}"
+  Hint: __Sortorder
+  Value: 100
+- ID: "{1eb8ae32-e190-44a6-968d-ed904c794ebf}"
+  Hint: Source
+  Value: |
+    IsHawaiiUser|IsAlaskaUser|IsRestUSUser|IsCanadaUser
+Languages:
+- Language: en
+  Versions:
+  - Version: 1
+    Fields:
+    - ID: "{19a69332-a23e-4e70-8d16-b44b38f09af4}"
+      Hint: Title
+      Value: Rule Name
+    - ID: "{b5b27af1-25ef-405c-87ce-369b3a004016}"
+      Hint: __Display name
+      Value: Rule Name
+    - ID: "{577f1689-7de4-4ad2-a15f-7fdc1759285f}"
+      Hint: __Long description
+      Value: |
+        Specifies which authorization rule applies to media in this folder and its subfolders.
+        
+        Rule Mappings:
+        - IsHawaiiUser: Requires 'hasHawaiiState' claim
+        - IsAlaskaUser: Requires 'hasAlaskaState' claim
+        - IsRestUSUser: Requires 'hasRestUSState' claim
+        - IsCanadaUser: Requires 'hasCanadaState' claim
+        
+        Users must have at least one matching claim to access media in this folder.
+        Leave empty for publicly accessible media.
+        
+        Claims are checked in three ways:
+        1. Full URL: https://ipcoop.com/claims/hasHawaiiState
+        2. Short name: hasHawaiiState
+        3. User profile property: userProfile.HasHawaiiState
+    - ID: "{9541e67d-ce8c-4225-803d-33f7f29f09ef}"
+      Hint: __Short description
+      Value: Authorization rule for this folder (IsHawaiiUser, IsAlaskaUser, IsRestUSUser, or IsCanadaUser)
+    - ID: "{84e6c7ef-e5f9-4f9a-9e4a-5b3f2e1d0c9b}"
+      Hint: __Help link
+      Value: |
+        For more information, see the Media Security documentation in the docs folder.
