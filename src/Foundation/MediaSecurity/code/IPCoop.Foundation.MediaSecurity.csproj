@@ -1,15 +1,41 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8F3A5C2D-1E4B-4F9A-8C6D-2A9F3E5B7C8D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>IPCoop.Foundation.MediaSecurity</RootNamespace>
     <AssemblyName>IPCoop.Foundation.MediaSecurity</AssemblyName>
-    <Description>IPCoop Sitecore Media Request Handler with Claims-Based Authorization</Description>
-    <Version>1.0.0</Version>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
-
+  
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  
   <ItemGroup>
-    <!-- Sitecore Dependencies - Update versions to match your Sitecore instance -->
+    <!-- Sitecore References - Update paths to match your Sitecore instance -->
     <Reference Include="Sitecore.Kernel">
       <HintPath>..\..\..\..\lib\Sitecore.Kernel.dll</HintPath>
       <Private>False</Private>
@@ -25,12 +51,32 @@
     <Reference Include="System.Web" />
     <Reference Include="System.Security" />
     
-    <!-- Microsoft DI for Sitecore 9.3+ -->
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.0" />
+    <!-- Microsoft DI Abstractions - Install via NuGet -->
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.3.1.0\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
   </ItemGroup>
-
+  
   <ItemGroup>
-    <Folder Include="App_Config\Include\Foundation\" />
+    <Compile Include="Configuration\MediaSecurityServicesConfigurator.cs" />
+    <Compile Include="Extensions\ClaimsPrincipalExtensions.cs" />
+    <Compile Include="Extensions\UserProfileExtensions.cs" />
+    <Compile Include="Logging\MediaSecurityLogger.cs" />
+    <Compile Include="Models\AuthorizationResult.cs" />
+    <Compile Include="Models\RuleNameType.cs" />
+    <Compile Include="Pipelines\HttpRequestBegin\SecureMediaRequestProcessor.cs" />
+    <Compile Include="Security\Interfaces\IMediaAuthorizationService.cs" />
+    <Compile Include="Security\Services\MediaAuthorizationService.cs" />
   </ItemGroup>
-
+  
+  <ItemGroup>
+    <None Include="App_Config\Include\Foundation\IPCoop.Foundation.MediaSecurity.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
